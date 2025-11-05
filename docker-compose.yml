@@ -1,0 +1,58 @@
+version: "3.8"
+services:
+    mongo:
+      image: mongo:5
+      container_name: mongomicrodb
+      ports:
+        - "27017:27017"
+      volumes:
+        - mongo_data:/data/db
+
+    rabbitmq:
+      image: rabbitmq:3-management
+      container_name: rabbitmq
+      ports:
+          - "5672:5672"
+          - "15672:15672"
+      volumes:
+        - rabbitmq_data:/var/lib/rabbitmq 
+      environment:
+        - RABBITMQ_ERLANG_COOKIE=secret_cookie 
+      healthcheck:
+        test: ["CMD", "rabbitmq-diagnostics", "ping"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+        start_period: 40s  
+
+    user-service:
+       build: ./user-service
+       container_name: user-service
+       ports:
+         - "4000:4000"
+       depends_on:
+           - mongo
+
+    notification-service:
+       build: ./notification-service
+       container_name: notification-service
+       ports:
+         - "6000:6000"
+       depends_on:
+         rabbitmq:
+           condition: service_healthy
+
+    tasks-service:
+       build: ./task-service
+       container_name: task-service
+       ports:
+         - "5000:5000"
+       depends_on:
+         mongo:
+           condition: service_started
+         rabbitmq:
+           condition: service_healthy
+
+volumes:
+  mongo_data: {}
+  rabbitmq_data: {} 

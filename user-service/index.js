@@ -8,7 +8,7 @@ const {specs , swaggerUi} = require('./swagger/swagger-config')
 const app = express()
 const http_server = createServer(app) 
 
-mongoose.connect('mongodb://localhost:27017/users').then(()=>console.log('MGDB Connected')).catch(err=>console.error(err))
+mongoose.connect('mongodb://mongo:27017/users').then(()=>console.log('MGDB Connected')).catch(err=>console.error(err))
 
 const UserSchema = new mongoose.Schema({
     name:String,
